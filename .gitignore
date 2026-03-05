@@ -43,4 +43,4 @@ bin/
 .DS_Store
 
 ### 설정 파일 ###
-/src/main/resources/application.yml
+application.yml
