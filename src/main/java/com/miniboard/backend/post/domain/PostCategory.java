@@ -8,7 +8,12 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name="post_category")
+@Table(name = "post_category",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_post_category",
+                columnNames = {"post_id", "category_id"}
+        )
+)
 public class PostCategory {
 
     @Id
@@ -16,11 +21,11 @@ public class PostCategory {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="post_id",nullable = false)
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="category_id",nullable = false)
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
 
