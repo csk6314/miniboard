@@ -4,13 +4,17 @@ import com.miniboard.backend.domain.BaseEntity;
 import com.miniboard.backend.member.domain.UserEntity;
 import com.miniboard.backend.post.domain.Post;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="comments")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +31,9 @@ public class Comment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="parent_id")
     private Comment parent;
+
+    @OneToMany(mappedBy = "parent")
+    List<Comment> children = new ArrayList<>();
 
     @Column(nullable = false)
     private String content;
