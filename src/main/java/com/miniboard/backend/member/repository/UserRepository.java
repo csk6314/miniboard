@@ -37,6 +37,10 @@ public class UserRepository {
                 .getResultList();
     }
 
+    public void delete(UserEntity user) {
+        em.remove(user);
+    }
+
     public void deleteById(Long id) {
         UserEntity user = em.find(UserEntity.class, id);
 

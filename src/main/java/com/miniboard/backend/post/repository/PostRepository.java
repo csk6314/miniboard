@@ -36,6 +36,10 @@ public class PostRepository {
                 .getResultList();
     }
 
+    public void delete(Post post) {
+        em.remove(post);
+    }
+
     public void deleteById(Long id) {
         Post post = em.find(Post.class, id);
 
