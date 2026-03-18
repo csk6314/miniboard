@@ -30,7 +30,7 @@ public class PostRepository {
 
     public List<Post> findAllByUserId(Long id) {
         return em.createQuery(
-                "select p from Post p where post.author.id = :userId order by p.id desc", Post.class
+                "select p from Post p where p.author.id = :userId order by p.id desc", Post.class
                 )
                 .setParameter("userId", id)
                 .getResultList();
