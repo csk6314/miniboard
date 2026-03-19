@@ -32,9 +32,6 @@ public class Comment extends BaseEntity {
     @JoinColumn(name="parent_id")
     private Comment parent;
 
-    @OneToMany(mappedBy = "parent")
-    List<Comment> children = new ArrayList<>();
-
     @Column(nullable = false)
     private String content;
 
@@ -46,5 +43,9 @@ public class Comment extends BaseEntity {
         this.author = author;
         this.parent = parent;
         this.content = content;
+    }
+
+    public void setDeleted(boolean status) {
+        this.isDelete = status;
     }
 }
