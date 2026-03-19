@@ -42,7 +42,7 @@ public class PostService {
     private void addCategories(Long userId, List<Long> categoryIds, Post post) {
         for(Long categoryId : categoryIds) {
             Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(()->new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+                    .orElseThrow(()->new IllegalArgumentException("존재하지 않는 카테고리입니다."));
 
             validateCategoryOwner(userId, category);
 
@@ -61,7 +61,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
 
-        List<PostCategory> categories = postCategoryRepository.findByPostId(postId);
+        List<PostCategory> categories = postCategoryRepository.findAllByPostId(postId);
 
         return PostDetailResponseDto.from(post, categories);
     }
@@ -74,7 +74,7 @@ public class PostService {
         return postRepository.findAllByUserId(userId);
     }
 
-    public void updatePost(Long postId, Long userId, String title, String content) {
+    public void updatePost(Long postId, Long userId, String title, String content, List<Long> categoryIds) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
 
@@ -83,7 +83,16 @@ public class PostService {
         post.updateTitle(title);
         post.updateContent(content);
 
+        postCategoryRepository.deleteByPostId(postId);
 
+        for(Long categoryId : categoryIds) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
+
+            validateCategoryOwner(userId, category);
+
+            postCategoryRepository.save(new PostCategory(post, category));
+        }
     }
 
     @Transactional
@@ -93,6 +102,7 @@ public class PostService {
 
         vaildateWriter(post, userId);
 
+        postCategoryRepository.deleteByPostId(postId);
         postRepository.delete(post);
     }
 
