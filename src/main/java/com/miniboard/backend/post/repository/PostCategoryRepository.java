@@ -17,7 +17,7 @@ public class PostCategoryRepository {
         em.persist(postCategory);
     }
 
-    public List<PostCategory> findByPostId(Long postId) {
+    public List<PostCategory> findAllByPostId(Long postId) {
         return em.createQuery(
                         "select pc from PostCategory pc " +
                                 "join fetch pc.category " +
@@ -34,6 +34,14 @@ public class PostCategoryRepository {
                                 "and pc.category.id = :categoryId")
                 .setParameter("postId", postId)
                 .setParameter("categoryId", categoryId)
+                .executeUpdate();
+    }
+
+    public void deleteByPostId(Long postId) {
+        em.createQuery(
+                        "delete from PostCategory pc " +
+                                "where pc.post.id = :postId "
+                ).setParameter("postId", postId)
                 .executeUpdate();
     }
 
