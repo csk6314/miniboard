@@ -1,6 +1,6 @@
 package com.miniboard.backend.auth.jwt;
 
-import com.miniboard.backend.auth.dto.TokenResponse;
+import com.miniboard.backend.auth.dto.TokenResponseDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ class JwtTokenProviderTest {
     @Test
     @DisplayName("access token과 refresh token을 생성할 수 있다")
     void generateTokens() {
-        TokenResponse tokenResponse = jwtTokenProvider.generateTokens(1L);
+        TokenResponseDto tokenResponse = jwtTokenProvider.generateTokens(1L);
 
         assertThat(tokenResponse.accessToken()).isNotBlank();
         assertThat(tokenResponse.refreshToken()).isNotBlank();
