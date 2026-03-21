@@ -1,10 +1,11 @@
 package com.miniboard.backend.auth.jwt;
 
-import com.miniboard.backend.auth.dto.TokenResponse;
+import com.miniboard.backend.auth.dto.TokenResponseDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ public class JwtTokenProvider {
     @Value("${jwt.access-token-expiration}")
     private long accessTokenExpiration;
 
+    @Getter
     @Value("${jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
 
@@ -31,10 +33,10 @@ public class JwtTokenProvider {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public TokenResponse generateTokens(Long userId) {
+    public TokenResponseDto generateTokens(Long userId) {
         String accessToken = generateAccessToken(userId);
         String refreshToken = generateRefreshToken(userId);
-        return new TokenResponse(accessToken, refreshToken);
+        return new TokenResponseDto(accessToken, refreshToken);
     }
 
     public String generateAccessToken(Long userId) {

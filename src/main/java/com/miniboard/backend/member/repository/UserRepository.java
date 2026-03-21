@@ -20,21 +20,33 @@ public class UserRepository {
     }
 
     public Optional<UserEntity> findById(Long id) {
-           UserEntity user = em.find(UserEntity.class, id);
-           return Optional.ofNullable(user);
+        UserEntity user = em.find(UserEntity.class, id);
+        return Optional.ofNullable(user);
     }
 
     public Optional<UserEntity> findByEmail(String email) {
-        List<UserEntity>  result = em.createQuery("select u from User u where u.email = :email",UserEntity.class)
-                .setParameter("email",email)
+        List<UserEntity> result = em.createQuery("select u from UserEntity u where u.email = :email", UserEntity.class)
+                .setParameter("email", email)
                 .getResultList();
 
         return result.stream().findFirst();
     }
 
     public List<UserEntity> findAll() {
-        return em.createQuery("select u from User u", UserEntity.class)
+        return em.createQuery("select u from UserEntity u", UserEntity.class)
                 .getResultList();
+    }
+
+    public boolean existsByEmail(String email) {
+        Long count = em.createQuery(
+                        "select count(u) from UserEntity u "
+                                + "where u.email = :email"
+                        , Long.class
+                )
+                .setParameter("email", email)
+                .getSingleResult();
+
+        return count > 0;
     }
 
     public void delete(UserEntity user) {
@@ -44,7 +56,7 @@ public class UserRepository {
     public void deleteById(Long id) {
         UserEntity user = em.find(UserEntity.class, id);
 
-        if(user != null) {
+        if (user != null) {
             em.remove(user);
         }
     }
