@@ -1,9 +1,11 @@
 package com.miniboard.backend.auth.repository;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -12,6 +14,15 @@ class RefreshTokenRepositoryTest {
 
     @Autowired
     private RefreshTokenRepository refreshTokenService;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    @AfterEach
+    void tearDown() {
+        redisTemplate.getConnectionFactory()
+                .getConnection()
+                .flushDb();
+    }
 
     @Test
     @DisplayName("refresh token을 저장하고 조회할 수 있다")
