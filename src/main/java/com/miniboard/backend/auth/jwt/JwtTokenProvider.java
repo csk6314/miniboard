@@ -87,6 +87,14 @@ public class JwtTokenProvider {
         }
     }
 
+    public boolean validateAccessToken(String token) {
+        return validateToken(token) && "access".equals(getTokenType(token));
+    }
+
+    public boolean validateRefreshToken(String token) {
+        return validateToken(token) && "refresh".equals(getTokenType(token));
+    }
+
 
     private Claims parseClaims(String token) {
         return Jwts.parser()
