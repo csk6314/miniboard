@@ -67,4 +67,45 @@ public class AuthService {
         }
     }
 
+    @Transactional
+    public TokenResponseDto reissue(String refreshToken) {
+        if(refreshToken == null || refreshToken.isBlank()) {
+            throw new IllegalArgumentException("리프레시 토큰이 없습니다.");
+        }
+
+        if(!jwtTokenProvider.validateRefreshToken(refreshToken)) {
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+
+        String savedRefreshToken = refreshTokenRepository.findByUserId(userId);
+        if(savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
+            throw new IllegalArgumentException("리프레시 토큰이 일치하지 않습니다.");
+        }
+
+        TokenResponseDto newTokenResponse = jwtTokenProvider.generateTokens(userId);
+
+        refreshTokenRepository.save(
+                userId,
+                newTokenResponse.refreshToken(),
+                jwtTokenProvider.getRefreshTokenExpiration()
+        );
+
+        return newTokenResponse;
+    }
+
+    @Transactional
+    public void logout(String refreshToken) {
+        if(refreshToken == null || refreshToken.isBlank()) {
+            return;
+        }
+
+        if(!jwtTokenProvider.validateRefreshToken(refreshToken)) {
+            return;
+        }
+
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+        refreshTokenRepository.delete(userId);
+    }
 }
