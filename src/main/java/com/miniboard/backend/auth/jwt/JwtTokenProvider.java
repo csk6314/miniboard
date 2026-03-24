@@ -1,8 +1,7 @@
 package com.miniboard.backend.auth.jwt;
 
 import com.miniboard.backend.auth.dto.TokenResponseDto;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
@@ -75,33 +74,65 @@ public class JwtTokenProvider {
         return claims.get("type", String.class);
     }
 
-    public boolean validateToken(String token) {
+    public Claims validateTokenOrThrow(String token) {
+
+        if (token == null || token.isBlank()) {
+            throw new JwtAuthenticationException(JwtErrorCode.EMPTY_TOKEN);
+        }
+
         try {
-            Jwts.parser()
+            return Jwts.parser()
                     .verifyWith(secretKey)
                     .build()
-                    .parseSignedClaims(token);
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            throw new JwtAuthenticationException(JwtErrorCode.EXPIRED_TOKEN);
+        } catch (UnsupportedJwtException e) {
+            throw new JwtAuthenticationException(JwtErrorCode.UNSUPPORTED_TOKEN);
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new JwtAuthenticationException(JwtErrorCode.INVALID_TOKEN);
+        }
+    }
+
+    public void validateAccessTokenOrThrow(String token) {
+        Claims claims = validateTokenOrThrow(token);
+        String type = claims.get("type", String.class);
+
+        if (!TokenType.ACCESS_TOKEN.getTypeName().equals(type)) {
+            throw new JwtAuthenticationException(JwtErrorCode.INVALID_TOKEN_TYPE);
+        }
+
+    }
+
+    public void validateRefreshTokenOrThrow(String token) {
+        Claims claims = validateTokenOrThrow(token);
+        String type = claims.get("type", String.class);
+
+        if (!TokenType.REFRESH_TOKEN.getTypeName().equals(type)) {
+            throw new JwtAuthenticationException(JwtErrorCode.INVALID_TOKEN_TYPE);
+        }
+    }
+
+    public boolean validateRefreshToken(String token) {
+        try {
+            validateRefreshTokenOrThrow(token);
             return true;
-        } catch (Exception e) {
+        } catch (JwtAuthenticationException e) {
             return false;
         }
     }
 
-    public boolean validateAccessToken(String token) {
-        return validateToken(token) && "access".equals(getTokenType(token));
-    }
-
-    public boolean validateRefreshToken(String token) {
-        return validateToken(token) && "refresh".equals(getTokenType(token));
-    }
-
-
     private Claims parseClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            return Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
     }
 
 }

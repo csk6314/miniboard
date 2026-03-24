@@ -24,9 +24,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+
         String token = resolveToken(request);
 
-        if(token != null && jwtTokenProvider.validateAccessToken(token)) {
+        if(token != null) {
+            jwtTokenProvider.validateAccessTokenOrThrow(token);
             Long userId = jwtTokenProvider.getUserId(token);
 
             UsernamePasswordAuthenticationToken authentication =
@@ -35,9 +37,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             null,
                             AuthorityUtils.NO_AUTHORITIES
                     );
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
-
 
         filterChain.doFilter(request, response);
     }
@@ -45,8 +47,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
 
-        if(bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+        if(bearerToken == null || bearerToken.isBlank()) {
             return null;
+        }
+
+        if (!bearerToken.startsWith("Bearer ")) {
+            throw new JwtAuthenticationException(JwtErrorCode.INVALID_TOKEN);
         }
 
         return bearerToken.substring(7);

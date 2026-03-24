@@ -3,11 +3,14 @@ package com.miniboard.backend.auth.service;
 import com.miniboard.backend.auth.dto.LoginRequestDto;
 import com.miniboard.backend.auth.dto.SignUpRequestDto;
 import com.miniboard.backend.auth.dto.TokenResponseDto;
+import com.miniboard.backend.auth.jwt.JwtAuthenticationException;
+import com.miniboard.backend.auth.jwt.JwtErrorCode;
 import com.miniboard.backend.auth.jwt.JwtTokenProvider;
 import com.miniboard.backend.auth.repository.RefreshTokenRepository;
 import com.miniboard.backend.member.domain.UserEntity;
 import com.miniboard.backend.member.domain.UserRole;
 import com.miniboard.backend.member.repository.UserRepository;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -69,19 +72,13 @@ public class AuthService {
 
     @Transactional
     public TokenResponseDto reissue(String refreshToken) {
-        if(refreshToken == null || refreshToken.isBlank()) {
-            throw new IllegalArgumentException("리프레시 토큰이 없습니다.");
-        }
-
-        if(!jwtTokenProvider.validateRefreshToken(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
-        }
+        jwtTokenProvider.validateRefreshTokenOrThrow(refreshToken);
 
         Long userId = jwtTokenProvider.getUserId(refreshToken);
 
         String savedRefreshToken = refreshTokenRepository.findByUserId(userId);
         if(savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
-            throw new IllegalArgumentException("리프레시 토큰이 일치하지 않습니다.");
+            throw new JwtAuthenticationException(JwtErrorCode.INVALID_TOKEN);
         }
 
         TokenResponseDto newTokenResponse = jwtTokenProvider.generateTokens(userId);
