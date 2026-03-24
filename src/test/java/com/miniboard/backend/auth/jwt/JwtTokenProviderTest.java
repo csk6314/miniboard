@@ -1,6 +1,7 @@
 package com.miniboard.backend.auth.jwt;
 
 import com.miniboard.backend.auth.dto.TokenResponseDto;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +45,10 @@ class JwtTokenProviderTest {
 
     @Test
     @DisplayName("정상 토큰은 검증에 성공한다")
-    void validateToken() {
+    void validateToken() throws JwtAuthenticationException{
         String accessToken = jwtTokenProvider.generateAccessToken(1L);
 
-        boolean result = jwtTokenProvider.validateToken(accessToken);
 
-        assertThat(result).isTrue();
+        jwtTokenProvider.validateAccessTokenOrThrow(accessToken);
     }
 }
